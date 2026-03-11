@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
+
+<title>Home</title>
+
+</head>
+
+<body>
+
+<main class="p-4 bg-gray-100 dark:bg-gray-800 h-screen w-screen flex items-center justify-center flex-col">
+
+<h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
+Welcome to Home Page
+</h1>
+
+<button onclick="openPopup()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+Upload File
+</button>
+
+<div id="popup" class="hidden fixed top-0 left-0 h-screen w-screen bg-black/40 flex items-center justify-center">
+
+<form action="/user/home" method="post" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-lg">
+
+<div class="flex justify-end mb-2">
+<button type="button" onclick="closePopup()" class="text-red-500 text-xl">✖</button>
+</div>
+
+<div class="flex items-center justify-center w-96">
+
+<div class="flex flex-col items-center justify-center w-full h-64 border border-dashed border-gray-400 rounded-lg">
+
+<div class="flex flex-col items-center justify-center pt-5 pb-6">
+
+<svg class="w-8 h-8 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
+</svg>
+
+<p class="mb-2 text-sm">Click the button below to upload</p>
+
+<p class="text-xs mb-4">
+Max. File Size: <span class="font-semibold">30MB</span>
+</p>
+
+<button
+type="button"
+onclick="document.getElementById('file').click()"
+class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 rounded text-sm px-3 py-2">
+
+Browse File
+
+</button>
+
+</div>
+</div>
+
+<input id="file" type="file" class="hidden" name="files" />
+
+</div>
+
+<button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+Upload
+</button>
+
+</form>
+
+</div>
+
+</main>
+
+<script>
+function openPopup(){
+document.getElementById("popup").classList.remove("hidden");
+}
+
+function closePopup(){
+document.getElementById("popup").classList.add("hidden");
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+
+</body>
+</html>
