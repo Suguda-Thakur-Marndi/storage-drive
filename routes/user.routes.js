@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { body, validationResult } = require('express-validator');
-const userModel = require('../models/user.model.js');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import { body, validationResult } from 'express-validator';
+import userModel from '../models/user.model.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 router.get('/register',(req,res)=>{
     res.render('register');
@@ -99,4 +99,4 @@ res.status(500).send("Login error");
 }
 );
 
-module.exports = router;
+export default router;

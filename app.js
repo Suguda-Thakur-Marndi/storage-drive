@@ -1,11 +1,12 @@
-const express = require('express');
-const userRouter = require('./routes/user.routes');
-const indexRouter = require('./routes/index.routes');
-const dotenv = require('dotenv');
-const userModel = require('./models/user.model.js');
-const cookieParser = require('cookie-parser');
+import express from 'express';
+import userRouter from './routes/user.routes.js';
+import indexRouter from './routes/index.routes.js';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import connectToDB from './config/db.js';
 
 dotenv.config();
+connectToDB();
 
 const app = express();
 app.use(cookieParser());
