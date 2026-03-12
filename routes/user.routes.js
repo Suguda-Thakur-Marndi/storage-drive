@@ -84,7 +84,7 @@ username:user.username
 },
 process.env.JWT_SECRET
 );
-res.cookie('token',token)
+res.cookie('token',token);
 
 res.json({
 message:"Login successful",
