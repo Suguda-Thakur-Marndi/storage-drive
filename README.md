@@ -1,6 +1,6 @@
 # Backend Authentication System
 
-A simple **Node.js + Express backend project** that implements **user registration and login functionality** with **MongoDB** and **password hashing using bcrypt**.
+A simple **Node.js + Express backend project** that implements **user registration and login functionality** with **Supabase** and **password hashing using bcrypt**.
 The project also uses **EJS for views** and follows a basic **MVC-style folder structure**.
 
 ---
@@ -10,7 +10,7 @@ The project also uses **EJS for views** and follows a basic **MVC-style folder s
 * User Registration
 * User Login
 * Password Hashing with **bcrypt**
-* MongoDB Database using **Mongoose**
+* Supabase database access using the official **Supabase JS** client
 * Server logging with **Morgan**
 * Environment variables using **dotenv**
 * Simple UI using **EJS**
@@ -48,8 +48,8 @@ Backend
 
 * Node.js
 * Express.js
-* MongoDB
-* Mongoose
+* Supabase
+* @supabase/supabase-js
 * bcrypt
 * dotenv
 * Morgan
@@ -86,8 +86,17 @@ Create a `.env` file in the root folder.
 Example:
 
 ```
-MONGO_URI=mongodb://127.0.0.1:27017/backendDB
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+JWT_SECRET=your-jwt-secret
 ```
+
+Create a `users` table in Supabase with at least these columns:
+
+* `id` uuid primary key defaulting to `gen_random_uuid()`
+* `username` text unique not null
+* `email` text unique not null
+* `password` text not null
 
 ---
 
