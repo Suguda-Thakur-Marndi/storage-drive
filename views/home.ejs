@@ -3,117 +3,87 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-<link href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css" rel="stylesheet" />
-
 <title>Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/style.css" />
 
 </head>
 
-<body>
+<body class="page-home">
+<main class="home-shell">
+	<header class="home-topbar">
+		<div>
+			<h1 class="home-brand">Vault Dashboard</h1>
+			<span class="home-badge">Welcome <%= username || 'User' %></span>
+		</div>
 
-<main class="p-4 bg-gray-100 dark:bg-gray-800 h-screen w-screen flex items-center justify-center flex-col">
+		<div class="home-actions">
+			<button type="button" onclick="openPopup()" class="home-btn home-btn-primary">Upload File</button>
+			<form action="/user/logout" method="post">
+				<button type="submit" class="home-btn home-btn-dark">Logout</button>
+			</form>
+		</div>
+	</header>
 
-<h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-Welcome <%= username || 'User' %>
-</h1>
+	<section class="home-panel">
+		<h2>Your Uploaded Files</h2>
 
-<div class="flex gap-3 mb-6">
-<button onclick="openPopup()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-Upload File
-</button>
-<form action="/user/logout" method="post">
-<button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
-Logout
-</button>
-</form>
-</div>
-
-<section class="w-full max-w-3xl bg-white rounded-lg shadow p-4">
-<h2 class="text-xl font-semibold mb-4">Your Uploaded Files</h2>
-
-<% if (files && files.length > 0) { %>
-<ul class="divide-y divide-gray-200">
-<% files.forEach(function(file) { %>
-<li class="py-3 flex items-center justify-between">
-<div>
-<p class="font-medium text-gray-800"><%= file.originalName %></p>
-<p class="text-sm text-gray-500"><%= Math.ceil(file.size / 1024) %> KB</p>
-</div>
-<a href="/user/files/<%= file._id %>/download" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-2 rounded">
-Download
-</a>
-</li>
-<% }) %>
-</ul>
-<% } else { %>
-<p class="text-gray-500">No files uploaded yet.</p>
-<% } %>
-</section>
-
-<div id="popup" class="hidden fixed top-0 left-0 h-screen w-screen bg-black/40 flex items-center justify-center">
-
-<form action="/user/home" method="post" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-lg">
-
-<div class="flex justify-end mb-2">
-<button type="button" onclick="closePopup()" class="text-red-500 text-xl">✖</button>
-</div>
-
-<div class="flex items-center justify-center w-96">
-
-<div class="flex flex-col items-center justify-center w-full h-64 border border-dashed border-gray-400 rounded-lg">
-
-<div class="flex flex-col items-center justify-center pt-5 pb-6">
-
-<svg class="w-8 h-8 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
-</svg>
-
-<p class="mb-2 text-sm">Click the button below to upload</p>
-
-<p class="text-xs mb-4">
-Max. File Size: <span class="font-semibold">30MB</span>
-</p>
-
-<button
-type="button"
-onclick="document.getElementById('file').click()"
-class="inline-flex items-center text-white bg-blue-600 hover:bg-blue-700 rounded text-sm px-3 py-2">
-
-Browse File
-
-</button>
-
-</div>
-</div>
-
-<input id="file" type="file" class="hidden" name="files" />
-
-</div>
-
-<button type="submit" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-Upload
-</button>
-
-</form>
-
-</div>
-
+		<% if (files && files.length > 0) { %>
+			<div class="home-grid">
+				<% files.forEach(function(file) { %>
+					<article class="home-file-card">
+						<div class="home-file-meta">
+							<p class="home-file-name"><%= file.originalName %></p>
+							<p class="home-file-size"><%= Math.ceil(file.size / 1024) %> KB</p>
+						</div>
+						<a href="/user/files/<%= file._id %>/download" class="home-download">Download</a>
+					</article>
+				<% }) %>
+			</div>
+		<% } else { %>
+			<p class="home-empty">No files uploaded yet. Start by uploading your first file.</p>
+		<% } %>
+	</section>
 </main>
+
+<div id="popup" class="home-modal">
+	<form action="/user/home" method="post" enctype="multipart/form-data" class="home-sheet">
+		<div class="home-sheet-top">
+			<strong>Upload New File</strong>
+			<button type="button" class="home-close" onclick="closePopup()">✕</button>
+		</div>
+
+		<div class="home-drop">
+			<p>Choose a file from your device</p>
+			<p class="home-file-size">Maximum file size: 30MB</p>
+			<button type="button" class="home-btn home-btn-primary" onclick="document.getElementById('file').click()">Browse File</button>
+			<p id="fileNamePreview" class="home-file-name-preview">No file selected</p>
+			<input id="file" type="file" class="home-hidden-input" name="files" required />
+		</div>
+
+		<div class="home-sheet-actions">
+			<button type="button" class="home-btn home-btn-dark" onclick="closePopup()">Cancel</button>
+			<button type="submit" class="home-btn home-btn-primary">Upload</button>
+		</div>
+	</form>
+</div>
 
 <script>
 function openPopup(){
-document.getElementById("popup").classList.remove("hidden");
+document.getElementById("popup").classList.add("open");
 }
 
 function closePopup(){
-document.getElementById("popup").classList.add("hidden");
+document.getElementById("popup").classList.remove("open");
 }
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+document.getElementById('file').addEventListener('change', function (event) {
+const selected = event.target.files && event.target.files[0] ? event.target.files[0].name : 'No file selected';
+document.getElementById('fileNamePreview').textContent = selected;
+});
+</script>
 
 </body>
 </html>

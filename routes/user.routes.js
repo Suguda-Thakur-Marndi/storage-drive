@@ -68,8 +68,8 @@ password:hashedPassword
 res.redirect('/user/login');
 
 }catch(err){
-console.log(err);
-res.status(500).send("Error creating user");
+console.error('register error', err);
+res.status(500).json({ message: 'Error creating user', error: err.message });
 }
 
 }
@@ -120,8 +120,8 @@ res.cookie('token',token,{ httpOnly: true, sameSite: 'lax' });
 res.redirect('/user/home');
 
 }catch(err){
-console.log(err);
-res.status(500).send("Login error");
+console.error('login error', err);
+res.status(500).json({ message: 'Login error', error: err.message });
 }
 
 }

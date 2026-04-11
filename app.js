@@ -14,6 +14,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get('/style.css', (req, res) => {
+    res.sendFile(process.cwd() + '/views/style.css');
+});
+
 app.set('view engine', 'ejs');
 
 app.use('/', indexRouter);
