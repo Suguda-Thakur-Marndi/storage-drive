@@ -2,8 +2,31 @@ import express from 'express';
 const router = express.Router();
 import { body, validationResult } from 'express-validator';
 import userModel from '../models/user.model.js';
+import fileModel from '../models/file.model.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import requireAuth from '../middleware/auth.middleware.js';
+
+const uploadFolder = path.join(process.cwd(), 'uploads');
+fs.mkdirSync(uploadFolder, { recursive: true });
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadFolder);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 30 * 1024 * 1024 }
+});
 
 router.get('/register',(req,res)=>{
     res.render('register');
@@ -26,15 +49,23 @@ const {email,username,password} = req.body;
 
 try{
 
+const existingUser = await userModel.findOne({
+    $or: [{ email }, { username }]
+});
+
+if(existingUser){
+return res.status(409).send("Email or username already exists");
+}
+
 const hashedPassword = await bcrypt.hash(password,10);
 
-const user = await userModel.create({
+await userModel.create({
 email,
 username,
 password:hashedPassword
 });
 
-res.send("User Registered Successfully");
+res.redirect('/user/login');
 
 }catch(err){
 console.log(err);
@@ -78,18 +109,15 @@ return res.status(401).send("Invalid Email or Password");
 
 const token = jwt.sign(
 {
-userId:user._id,
+userId:user._id.toString(),
 email:user.email,
 username:user.username
 },
 process.env.JWT_SECRET
 );
-res.cookie('token',token);
+res.cookie('token',token,{ httpOnly: true, sameSite: 'lax' });
 
-res.json({
-message:"Login successful",
-token
-});
+res.redirect('/user/home');
 
 }catch(err){
 console.log(err);
@@ -98,5 +126,60 @@ res.status(500).send("Login error");
 
 }
 );
+
+router.get('/home', requireAuth, async (req, res) => {
+try {
+const files = await fileModel.find({ user: req.user.userId }).sort({ createdAt: -1 });
+res.render('home', { files, username: req.user.username });
+} catch (err) {
+console.log(err);
+res.status(500).send('Error loading home page');
+}
+});
+
+router.post('/home', requireAuth, upload.single('files'), async (req, res) => {
+try {
+if (!req.file) {
+return res.status(400).send('Please select a file');
+}
+
+await fileModel.create({
+user: req.user.userId,
+originalName: req.file.originalname,
+storedName: req.file.filename,
+filePath: req.file.path,
+mimeType: req.file.mimetype,
+size: req.file.size
+});
+
+res.redirect('/user/home');
+} catch (err) {
+console.log(err);
+res.status(500).send('File upload failed');
+}
+});
+
+router.get('/files/:id/download', requireAuth, async (req, res) => {
+try {
+const file = await fileModel.findOne({
+_id: req.params.id,
+user: req.user.userId
+});
+
+if (!file) {
+return res.status(404).send('File not found');
+}
+
+res.download(path.resolve(file.filePath), file.originalName);
+} catch (err) {
+console.log(err);
+res.status(500).send('Download failed');
+}
+});
+
+router.post('/logout', (req, res) => {
+res.clearCookie('token');
+res.redirect('/user/login');
+});
 
 export default router;

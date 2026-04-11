@@ -1,40 +1,31 @@
-import { getSupabaseClient } from '../config/db.js';
+import mongoose from 'mongoose';
 
-const getUsersTable = () => getSupabaseClient().from('users');
-
-const userModel = {
-    async create(userData) {
-        const { data, error } = await getUsersTable()
-            .insert([userData])
-            .select('id, username, email, password')
-            .single();
-
-        if (error) {
-            throw error;
-        }
-
-        return data;
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        minlength: [3, 'User must min 3 length'],
+        unique: true
     },
-
-    async findOne(query) {
-        let request = getUsersTable().select('id, username, email, password');
-
-        if (query.email) {
-            request = request.eq('email', query.email);
-        }
-
-        if (query.username) {
-            request = request.eq('username', query.username);
-        }
-
-        const { data, error } = await request.maybeSingle();
-
-        if (error) {
-            throw error;
-        }
-
-        return data;
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        unique: true,
+        minlength: [6, 'Email must be at least 6 characters']
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: [3, 'User must min 3 length']
     }
-};
+}, {
+    timestamps: true
+});
+
+const userModel = mongoose.model('User', userSchema);
 
 export default userModel;

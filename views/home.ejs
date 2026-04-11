@@ -16,12 +16,41 @@
 <main class="p-4 bg-gray-100 dark:bg-gray-800 h-screen w-screen flex items-center justify-center flex-col">
 
 <h1 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
-Welcome to Home Page
+Welcome <%= username || 'User' %>
 </h1>
 
+<div class="flex gap-3 mb-6">
 <button onclick="openPopup()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
 Upload File
 </button>
+<form action="/user/logout" method="post">
+<button type="submit" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+Logout
+</button>
+</form>
+</div>
+
+<section class="w-full max-w-3xl bg-white rounded-lg shadow p-4">
+<h2 class="text-xl font-semibold mb-4">Your Uploaded Files</h2>
+
+<% if (files && files.length > 0) { %>
+<ul class="divide-y divide-gray-200">
+<% files.forEach(function(file) { %>
+<li class="py-3 flex items-center justify-between">
+<div>
+<p class="font-medium text-gray-800"><%= file.originalName %></p>
+<p class="text-sm text-gray-500"><%= Math.ceil(file.size / 1024) %> KB</p>
+</div>
+<a href="/user/files/<%= file._id %>/download" class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-2 rounded">
+Download
+</a>
+</li>
+<% }) %>
+</ul>
+<% } else { %>
+<p class="text-gray-500">No files uploaded yet.</p>
+<% } %>
+</section>
 
 <div id="popup" class="hidden fixed top-0 left-0 h-screen w-screen bg-black/40 flex items-center justify-center">
 
