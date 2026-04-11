@@ -6,27 +6,34 @@ import fileModel from '../models/file.model.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
 import requireAuth from '../middleware/auth.middleware.js';
+import supabase from '../config/supabase.js';
 
-const uploadFolder = path.join(process.cwd(), 'uploads');
-fs.mkdirSync(uploadFolder, { recursive: true });
+const storageBucket = process.env.SUPABASE_STORAGE_BUCKET || 'user-files';
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadFolder);
-    },
-    filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`;
-        cb(null, uniqueName);
-    }
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({
     storage,
     limits: { fileSize: 30 * 1024 * 1024 }
 });
+
+const uploadAnyField = upload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'files', maxCount: 1 }
+]);
+
+const getUploadedFile = (req) => {
+    const fromFile = req.files?.file?.[0];
+    const fromFiles = req.files?.files?.[0];
+    return fromFile || fromFiles || null;
+};
+
+const sanitizeFileName = (name) => name.replace(/[^a-zA-Z0-9._-]/g, '-');
+
+const getStoragePath = (userId, originalName) => {
+    return `${userId}/${Date.now()}-${sanitizeFileName(originalName)}`;
+};
 
 router.get('/register',(req,res)=>{
     res.render('register');
@@ -137,19 +144,35 @@ res.status(500).send('Error loading home page');
 }
 });
 
-router.post('/home', requireAuth, upload.single('files'), async (req, res) => {
+router.post('/home', requireAuth, uploadAnyField, async (req, res) => {
 try {
-if (!req.file) {
+const uploadedFile = getUploadedFile(req);
+
+if (!uploadedFile) {
 return res.status(400).send('Please select a file');
+}
+
+const storagePath = getStoragePath(req.user.userId, uploadedFile.originalname);
+
+const { error: uploadError } = await supabase.storage
+.from(storageBucket)
+.upload(storagePath, uploadedFile.buffer, {
+contentType: uploadedFile.mimetype,
+upsert: false
+});
+
+if (uploadError) {
+console.log(uploadError);
+return res.status(500).send('File upload failed');
 }
 
 await fileModel.create({
 user: req.user.userId,
-originalName: req.file.originalname,
-storedName: req.file.filename,
-filePath: req.file.path,
-mimeType: req.file.mimetype,
-size: req.file.size
+originalName: uploadedFile.originalname,
+storedName: storagePath,
+filePath: storagePath,
+mimeType: uploadedFile.mimetype || 'application/octet-stream',
+size: uploadedFile.size
 });
 
 res.redirect('/user/home');
@@ -170,7 +193,21 @@ if (!file) {
 return res.status(404).send('File not found');
 }
 
-res.download(path.resolve(file.filePath), file.originalName);
+const { data, error } = await supabase.storage
+.from(storageBucket)
+.download(file.filePath);
+
+if (error || !data) {
+console.log(error);
+return res.status(500).send('Download failed');
+}
+
+const arrayBuffer = await data.arrayBuffer();
+const fileBuffer = Buffer.from(arrayBuffer);
+
+res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+res.send(fileBuffer);
 } catch (err) {
 console.log(err);
 res.status(500).send('Download failed');

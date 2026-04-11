@@ -88,7 +88,16 @@ Example:
 ```
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=user-files
 JWT_SECRET=your-jwt-secret
+```
+
+Create a Supabase Storage bucket named `user-files` (or set your custom name in `SUPABASE_STORAGE_BUCKET`).
+
+If you already uploaded files to the local `uploads` folder before this change, migrate them once with:
+
+```
+npm run migrate:uploads
 ```
 
 Create a `users` table in Supabase with at least these columns:
