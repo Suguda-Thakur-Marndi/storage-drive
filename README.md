@@ -164,7 +164,7 @@ GET /home
 
 ## 👨‍💻 Author
 
- Suguda
+  Suguda
 Computer Science Student 
 
 ---
